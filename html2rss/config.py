@@ -1,58 +1,19 @@
 import json
 import logging
 import os
-from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Union, List
+from html2rss.dataclass import SiteConf
 
-# CONFIG_FOLDER = Path(os.environ.get("HTML2RSS_CONFIG_FOLDER", default="./config"))
-CONFIG_FOLDER = Path(
-    os.environ.get("HTML2RSS_CONFIG_FOLDER", default="./config_example")
-)
+CONFIG_FOLDER = Path(os.environ.get("HTML2RSS_CONFIG_FOLDER", default="./config"))
 logger = logging.getLogger(__name__)
-
-
-def from_dict_to_dataclass(clz, data):
-    fieldSet = {f.name for f in fields(clz) if f.init}
-    filteredArgDict = {k: v for k, v in data.items() if k in fieldSet}
-    return clz(**filteredArgDict)
-
-
-@dataclass
-class RSSConf:
-    title: str
-    description: Union[str, None]
-    url: str
-
-    @staticmethod
-    def from_dict_to_dataclass(data):
-        return from_dict_to_dataclass(RSSConf, data)
-
-
-@dataclass
-class SiteConf:
-    url: str
-    rss: RSSConf
-    refresh: int = 300
-    alias: Union[str, None] = None
-
-    @staticmethod
-    def from_dict_to_dataclass(data):
-        ret = from_dict_to_dataclass(SiteConf, data)
-        ret.rss = RSSConf.from_dict_to_dataclass(data["rss"])
-        return ret
-
-    @property
-    def name(self):
-        return self.alias or self.url
-
 
 class ConfigManager(object):
     def __init__(self) -> None:
         self.configs: List[SiteConf] = []
 
     def load_config(self) -> None:
-        logger.info(f"Loading config... {CONFIG_FOLDER}")
+        logger.info(f"Loading config from {CONFIG_FOLDER.absolute()}")
         if not CONFIG_FOLDER.exists():
             logger.error("Config folder not found")
             return

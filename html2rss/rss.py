@@ -2,15 +2,14 @@ import time
 from dataclasses import dataclass
 from hashlib import md5
 from pathlib import Path
-from textwrap import dedent
-from typing import Dict, List, Union, Iterable, Tuple
+from typing import Dict, Iterable, List, Tuple, Union
 
 import lxml.etree
 import lxml.html
 import requests
-from jinja2 import Environment, PackageLoader, select_autoescape, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from html2rss.config import RSSConf, SiteConf
+from html2rss.dataclass import RSSConf, SiteConf
 
 
 class RSSCache(object):

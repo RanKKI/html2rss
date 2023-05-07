@@ -19,5 +19,11 @@ async def rss_handler(alias_or_url: str):
         raise HTTPException(
             status_code=404, detail=f"Config not found for {alias_or_url}"
         )
-    body = await rss.generate(conf)
+    try:
+        body = await rss.generate(conf)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating RSS feed for {alias_or_url}: {e}",
+        )
     return Response(content=body, media_type="application/xml")

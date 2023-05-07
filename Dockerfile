@@ -8,4 +8,4 @@ RUN pip install -r /app/requirements.txt
 
 COPY . /app/
 
-ENTRYPOINT [ "uvicorn", "html2rss:app" ]
+ENTRYPOINT [ "uvicorn", "html2rss:app", "--log-config ./conf/log.yml" ]
