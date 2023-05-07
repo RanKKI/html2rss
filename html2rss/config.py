@@ -32,8 +32,8 @@ class RSSConf:
 @dataclass
 class SiteConf:
     url: str
-    refresh: int
     rss: RSSConf
+    refresh: int = 300
     alias: Union[str, None] = None
 
     @staticmethod
@@ -56,13 +56,20 @@ class ConfigManager(object):
         if not CONFIG_FOLDER.exists():
             logger.error("Config folder not found")
             return
-        for conf_file in CONFIG_FOLDER.glob("*.json"):
+        for conf_file in CONFIG_FOLDER.glob("**/*.json"):
             conf_json = json.loads(conf_file.read_text())
-            conf = SiteConf.from_dict_to_dataclass(conf_json)
-            if conf.alias is None:
-                conf.alias = conf_file.stem
-            logger.info(f"Loaded config for {conf.name}")
-            self.configs.append(conf)
+
+            if "alias" not in conf_json:
+                conf_json["alias"] = conf_file.stem
+
+            try:
+                conf = SiteConf.from_dict_to_dataclass(conf_json)
+            except Exception as e:
+                logger.error(f"Error loading config {conf_file}: {e}")
+                continue
+            else:
+                logger.info(f"Loaded config for {conf.name}")
+                self.configs.append(conf)
         logger.info(f"Loaded {len(self.configs)} configs")
 
     def find_config(self, alias_or_url: str) -> Union[SiteConf, None]:
