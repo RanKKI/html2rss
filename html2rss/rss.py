@@ -1,15 +1,16 @@
 import time
-from dataclasses import dataclass
 from hashlib import md5
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple, Union
 
+import aiohttp
 import lxml.etree
 import lxml.html
-import requests
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from html2rss.dataclass import RSSConf, SiteConf
+from html2rss.dataclass import RSSConf, RSSItem, SiteConf
+
+NODE_RESULT = Union[lxml.etree._Element, lxml.etree._ElementUnicodeResult]
 
 
 class RSSCache(object):
@@ -43,28 +44,19 @@ class RSSCache(object):
         cache_file.write_text(html)
 
 
-@dataclass
-class RSSItem:
-    title: str
-    description: str
-    url: str
-    pub_date: str | None = None
-
-
-NODE_RESULT = Union[lxml.etree._Element, lxml.etree._ElementUnicodeResult]
-
-
 class RSS(object):
     def __init__(self) -> None:
         self.cache = RSSCache()
         jinja2Env = Environment(
-            loader=FileSystemLoader(searchpath="./template"),
+            loader=FileSystemLoader(searchpath="./templates"),
             autoescape=select_autoescape(),
         )
         self.template = jinja2Env.get_template("rss.xml")
 
     async def _scrape_html(self, url: str) -> str:
-        return await requests.get(url).text
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                return await resp.text()
 
     async def scrape_html(self, conf: SiteConf) -> str:
         if self.cache.is_valid(conf):

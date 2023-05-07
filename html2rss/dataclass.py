@@ -35,3 +35,11 @@ class SiteConf:
     @property
     def name(self):
         return self.alias or self.url
+
+
+@dataclass
+class RSSItem:
+    title: str
+    description: str
+    url: str
+    pub_date: str | None = None

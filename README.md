@@ -35,9 +35,13 @@ If the nodes found by the XPath expression is not a Unicode Result (`lxml.etree.
 
 The default config directory is `config`. It can be changed by setting the environment variable `HTML2RSS_CONFIG_FOLDER`.
 
-## Usage
+### HOST and PORT
 
-By default, the API server will run on port 8000, host `127.0.0.1`
+By default, the API server will run on port 8000, host `0.0.0.0`
+
+You can change the host and port by setting the environment variable `UVICORN_HOST` and `UVICORN_PORT` respectively.
+
+## Usage
 
 ### CLI
 

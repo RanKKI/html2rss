@@ -2,8 +2,10 @@
 *
 
 # Allow files and directories
-!/main.py
+!/requirements.txt
 !/html2rss
+!/conf
+!/templates
 
 # Ignore unnecessary files inside allowed directories
 # This should go after the allowed directories
