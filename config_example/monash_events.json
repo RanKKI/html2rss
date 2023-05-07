@@ -1,0 +1,10 @@
+{
+    "url": "https://www.monash.edu/students/support/international/events",
+    "refresh": 300,
+    "rss": {
+        "title": "//*[@class='intl-events']/div/div/a/@data-title",
+        "url": "//*[@class='intl-events']/div/div/a/@href",
+        "image": "//*[@class='intl-events']/div/div//img/@src",
+        "description": "//*[@class='intl-events']/div/div//p"
+    }
+}
