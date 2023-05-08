@@ -5,6 +5,7 @@
         "title": "//*[@class='intl-events']/div/div/a/@data-title",
         "url": "//*[@class='intl-events']/div/div/a/@href",
         "image": "//*[@class='intl-events']/div/div//img/@src",
-        "description": "//*[@class='intl-events']/div/div//p"
+        "description": "//*[@class='intl-events']/div/div//p",
+        "guid": "//*[@class='intl-events']/div/div/a/@href"
     }
 }

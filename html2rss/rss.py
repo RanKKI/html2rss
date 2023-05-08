@@ -2,15 +2,16 @@ import time
 from hashlib import md5
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple, Union
-
+import logging
 import aiohttp
 import lxml.etree
 import lxml.html
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from html2rss.dataclass import RSSConf, RSSItem, SiteConf
+from html2rss.dataclass import RSSItem, SiteConf, RSSChannel
 
 NODE_RESULT = Union[lxml.etree._Element, lxml.etree._ElementUnicodeResult]
+logger = logging.getLogger(__name__)
 
 
 class RSSCache(object):
@@ -24,10 +25,9 @@ class RSSCache(object):
         cache_file = self.get_cache_file(conf.url)
         if not cache_file.exists():
             return False
-        return True
         if cache_file.name not in self.cache_time:
             return False
-        # return self.now() < self.cache_time[cache_file.name] + conf.refresh
+        return self.now() < self.cache_time[cache_file.name] + conf.refresh
 
     def get_cache_file(self, url: str) -> Path:
         url_hash = md5(url.encode("utf-8")).hexdigest()
@@ -65,44 +65,65 @@ class RSS(object):
         self.cache.set_html(conf.url, html)
         return html
 
-    def __extract_text_if_needed(
-        self, arr: Iterable[Tuple[NODE_RESULT, NODE_RESULT, NODE_RESULT]]
-    ) -> str:
+    def parse_html(self, html: lxml.etree.ElementBase, conf: RSSItem) -> List[RSSItem]:
+        ret = []
+        item = {
+            "title": html.xpath(conf.title),
+            "description": html.xpath(conf.description),
+            "url": html.xpath(conf.url),
+        }
+
+        if conf.pub_date:
+            item["pub_date"] = html.xpath(conf.pub_date)
+
+        if conf.guid:
+            item["guid"] = html.xpath(conf.guid)
+
+        lengths = [len(val) for val in item.values()]
+
+        # all lengths should be the same
+        if not all([length == lengths[0] for length in lengths]):
+            logger.error("Lengths of elements are not the same")
+            return []
+
         def f(val: NODE_RESULT):
-            if isinstance(val, lxml.etree._Element):
-                return val.xpath("string()")
-            return val
+            ret = val
+            if isinstance(ret, lxml.etree._Element):
+                ret = ret.xpath("string()")
+            return ret
 
-        for title, description, url in arr:
-            yield f(title), f(description), f(url)
+        keys = list(item.keys())
+        i = 0
+        while i < lengths[0]:
+            m = {key: f(item[key][i]) for key in keys}
+            ret.append(RSSItem.from_dict_to_dataclass(m))
+            i += 1
 
-    def parse_html(self, html: lxml.etree.ElementBase, conf: RSSConf) -> List[RSSItem]:
-        items = []
-        titles = html.xpath(conf.title)
-        descriptions = html.xpath(conf.description)
-        urls = html.xpath(conf.url)
-        # pub_dates = html.xpath(conf.pub_date) if conf.pub_date else []
+        return ret
 
-        f = self.__extract_text_if_needed
-        for title, description, url in f(zip(titles, descriptions, urls)):
-            items.append(
-                RSSItem(
-                    title=title,
-                    description=description,
-                    url=url,
-                )
-            )
-        return items
-
-    def extract_title_from_html(self, html: lxml.etree.ElementBase) -> str:
-        return html.xpath("//title/text()")[0]
+    def extract_first_text(
+        self, html: lxml.etree.ElementBase, xpath: str
+    ) -> Union[str, None]:
+        nodes = html.xpath(xpath)
+        if not nodes:
+            return None
+        ret = nodes[0]
+        if isinstance(ret, lxml.etree._Element):
+            ret = ret.xpath("string()")
+        return ret
 
     async def generate(self, conf: SiteConf) -> str:
         html = await self.scrape_html(conf)
         tree = lxml.etree.HTML(html)
-        items = self.parse_html(tree, conf.rss)
-        title = self.extract_title_from_html(tree) or conf.name
-        return self.template.render(title=title, items=items, url=conf.url)
+
+        # Parsing
+        channel = RSSChannel(
+            title=self.extract_first_text(tree, "//head/title/text()") or conf.name,
+            language=self.extract_first_text(tree, "/html/@lang") or None,
+            url=conf.url,
+            items=self.parse_html(tree, conf.rss),
+        )
+        return self.template.render(channel=channel)
 
 
 rss = RSS()

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, field
 from typing import Union
 
 
@@ -9,27 +9,29 @@ def from_dict_to_dataclass(clz, data):
 
 
 @dataclass
-class RSSConf:
+class RSSItem:
     title: str
-    description: Union[str, None]
+    description: str
     url: str
+    pub_date: Union[str, None] = None
+    guid: Union[str, None] = None
 
     @staticmethod
     def from_dict_to_dataclass(data):
-        return from_dict_to_dataclass(RSSConf, data)
+        return from_dict_to_dataclass(RSSItem, data)
 
 
 @dataclass
 class SiteConf:
     url: str
-    rss: RSSConf
+    rss: RSSItem
     refresh: int = 300
     alias: Union[str, None] = None
 
     @staticmethod
     def from_dict_to_dataclass(data):
         ret = from_dict_to_dataclass(SiteConf, data)
-        ret.rss = RSSConf.from_dict_to_dataclass(data["rss"])
+        ret.rss = RSSItem.from_dict_to_dataclass(data["rss"])
         return ret
 
     @property
@@ -38,8 +40,9 @@ class SiteConf:
 
 
 @dataclass
-class RSSItem:
+class RSSChannel:
     title: str
-    description: str
     url: str
-    pub_date: str | None = None
+    items: list[RSSItem] = field(default_factory=list)
+    description: Union[str, None] = None
+    language: Union[str, None] = None

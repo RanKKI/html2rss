@@ -1,13 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
   <channel>
-    <title>{{ title }}</title>
-    <link>{{ url }}</link>
-    {%- for item in items -%}
+    <title>{{ channel.title }}</title>
+    <link>{{ channel.url }}</link>
+    <description>{{ channel.description }}</description>
+    <generator>https://github.com/RanKKI/html2rss</generator>
+    <language>{{ channel.language }}</language>
+    {% for item in channel.items %}
     <item>
       <title>{{ item.title }}</title>
       <link>{{ item.url }}</link>
       <description>{{ item.description | e }}</description>
-      </item> {% endfor %}
+      {% if item.guid %}<guid>{{ item.guid }}</guid>{% endif %}
+      {% if item.pub_date %}<pubDate>{{ item.pub_date }}</pubDate>{% endif %}
+    </item>
+    {% endfor %}
   </channel>
 </rss>
