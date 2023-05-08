@@ -9,7 +9,7 @@ It is useful for websites that don't have RSS feed but have a list of links on a
 
 ### Example configuration
 
-```{json}
+```json
 {
     "url": "https://www.monash.edu/students/support/international/events",
     "refresh": 300,
@@ -72,7 +72,7 @@ You can change the host and port by setting the environment variable `UVICORN_HO
 
 ### Docker
 
-```{bash}
+```bash
 docker run -d \
     -v /path/to/config:/app/config \
     -p 8000:8000 \
