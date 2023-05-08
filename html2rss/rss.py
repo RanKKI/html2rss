@@ -65,25 +65,93 @@ class RSS(object):
         self.cache.set_html(conf.url, html)
         return html
 
-    def parse_html(self, html: lxml.etree.ElementBase, conf: RSSItem) -> List[RSSItem]:
+    def parse_attr_normal(
+        self, html: lxml.etree.ElementBase, key: str, xpath: str, required: bool = False
+    ) -> List[str]:
+        if required and not xpath:
+            raise ValueError(f"Required key {key} not found")
+        if not xpath:
+            return {}
+        return {key: html.xpath(xpath)}
+
+    # do head check for enclosure url
+    # return (length, type)
+    async def __head_check(self, url: str) -> Tuple[str, str]:
+        async with aiohttp.ClientSession() as session:
+            async with session.head(url) as resp:
+                headers = resp.headers
+                return headers.get("Content-Length"), headers.get("Content-Type")
+
+    # conf is a dict map, e.g. {"url": "//enclosure/@url"}
+    # possible keys: url, length, type
+    async def parse_attr_enclosure(
+        self, html: lxml.etree.ElementBase, enclosure: dict
+    ) -> List[dict]:
+        url_xpath = enclosure.get("url")
+        head_check = True
+
+        urls = html.xpath(url_xpath)
+        lengths, types = [], []
+        if hasattr(enclosure, "length") and hasattr(enclosure, "type"):
+            lengths = html.xpath(enclosure.get("length"))
+            types = html.xpath(enclosure.get("type"))
+            head_check = False
+
+        if head_check:
+            logger.debug("parsing enclosure and needs head-check for resources")
+            for url in urls:
+                length, type = await self.__head_check(url)
+                lengths.append(length)
+                types.append(type)
+
         ret = []
-        item = {
-            "title": html.xpath(conf.title),
-            "description": html.xpath(conf.description),
-            "url": html.xpath(conf.url),
-        }
+        for url, length, type in zip(urls, lengths, types):
+            ret.append(
+                {
+                    "url": url,
+                    "length": length if length else "",
+                    "type": type if type else "",
+                }
+            )
 
-        if conf.pub_date:
-            item["pub_date"] = html.xpath(conf.pub_date)
+        return {"enclosure": ret}
 
-        if conf.guid:
-            item["guid"] = html.xpath(conf.guid)
+    async def xpath_rss_items(
+        self, html: lxml.etree.ElementBase, conf: RSSItem
+    ) -> dict:
+        item = {}
+        required = ["title", "description", "url"]
+        optional = ["pub_date", "guid"]
+
+        for key in required:
+            logger.debug(f"parsing required {key}")
+            item.update(self.parse_attr_normal(html, key, getattr(conf, key), True))
+
+        for key in optional:
+            logger.debug(f"parsing optional {key}")
+            item.update(self.parse_attr_normal(html, key, getattr(conf, key), False))
+
+        if enclosure := getattr(conf, "enclosure", None):
+            logger.debug(f"parsing enclosure")
+            if enclosure.get("url"):
+                item.update(await self.parse_attr_enclosure(html, enclosure))
 
         lengths = [len(val) for val in item.values()]
 
         # all lengths should be the same
         if not all([length == lengths[0] for length in lengths]):
-            logger.error("Lengths of elements are not the same")
+            raise ValueError("Lengths of all keys should be the same")
+
+        return item, lengths[0]
+
+    async def parse_html(
+        self, html: lxml.etree.ElementBase, conf: RSSItem
+    ) -> List[RSSItem]:
+        try:
+            item, length = await self.xpath_rss_items(html, conf)
+        except ValueError as e:
+            logger.error(e)
+            raise e
             return []
 
         def f(val: NODE_RESULT):
@@ -94,7 +162,8 @@ class RSS(object):
 
         keys = list(item.keys())
         i = 0
-        while i < lengths[0]:
+        ret = []
+        while i < length:
             m = {key: f(item[key][i]) for key in keys}
             ret.append(RSSItem.from_dict_to_dataclass(m))
             i += 1
@@ -117,11 +186,12 @@ class RSS(object):
         tree = lxml.etree.HTML(html)
 
         # Parsing
+        items = await self.parse_html(tree, conf.rss)
         channel = RSSChannel(
             title=self.extract_first_text(tree, "//head/title/text()") or conf.name,
             language=self.extract_first_text(tree, "/html/@lang") or None,
             url=conf.url,
-            items=self.parse_html(tree, conf.rss),
+            items=items,
         )
         return self.template.render(channel=channel)
 

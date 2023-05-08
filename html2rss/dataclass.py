@@ -9,12 +9,20 @@ def from_dict_to_dataclass(clz, data):
 
 
 @dataclass
+class RSSItemEnclosure:
+    url: str
+    length: Union[str, None] = None
+    type: Union[str, None] = None
+
+
+@dataclass
 class RSSItem:
     title: str
     description: str
     url: str
     pub_date: Union[str, None] = None
     guid: Union[str, None] = None
+    enclosure: Union[RSSItemEnclosure, None] = None
 
     @staticmethod
     def from_dict_to_dataclass(data):

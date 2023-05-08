@@ -2,9 +2,15 @@ from html2rss.config import config
 from html2rss.rss import rss
 import asyncio
 
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
 
 async def main():
-    print("hello")
     config.load_config()
     conf = config.find_config("monash_events")
     if not conf:

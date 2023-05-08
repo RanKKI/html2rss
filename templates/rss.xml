@@ -13,6 +13,7 @@
       <description>{{ item.description | e }}</description>
       {% if item.guid %}<guid>{{ item.guid }}</guid>{% endif %}
       {% if item.pub_date %}<pubDate>{{ item.pub_date }}</pubDate>{% endif %}
+      {% if item.enclosure %}<enclosure url="{{ item.enclosure.url }}" length="{{ item.enclosure.length }}" type="{{ item.enclosure.type }}" />{% endif %}
     </item>
     {% endfor %}
   </channel>
