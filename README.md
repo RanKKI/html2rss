@@ -12,13 +12,17 @@ It is useful for websites that don't have RSS feed but have a list of links on a
 ```{json}
 {
     "url": "https://www.monash.edu/students/support/international/events",
-    "alias": "monash_events",
     "refresh": 300,
+    "alias": "some_alias",
     "rss": {
         "title": "//*[@class='intl-events']/div/div/a/@data-title",
         "url": "//*[@class='intl-events']/div/div/a/@href",
         "image": "//*[@class='intl-events']/div/div//img/@src",
-        "description": "//*[@class='intl-events']/div/div//p"
+        "description": "//*[@class='intl-events']/div/div//p",
+        "guid": "//*[@class='intl-events']/div/div/a/@href",
+        "enclosure": {
+            "url": "//*[@class='intl-events']/div/div//img/@src"
+        }
     }
 }
 ```
@@ -30,6 +34,22 @@ It is useful for websites that don't have RSS feed but have a list of links on a
 config file can be placed in the config directory or folders in the config directory. For example, `config/monash_events.json` or `config/monash/monash_events.json` are acceptable, as long as the file format is `.json`.
 
 If the nodes found by the XPath expression is not a Unicode Result (`lxml.etree._ElementUnicodeResult`), the script will try to convert it by using `node.xpath("string()")`. It is useful for nodes that contains multiple text nodes.
+
+#### Enclosure
+
+```json
+{
+    "enclosure": {
+        "url": "//*[@class='intl-events']/div/div//img/@src",
+        "length": "//*[@class='intl-events']/div/div//img/@length",
+        "type": "image/jpeg"
+    }
+}
+```
+
+Enclosure is optional. If not specified, the enclosure will not be included in the RSS feed.
+
+If both `length` and `type` are not specified, it will do a HTTP HEAD request to get the length and type of the file.
 
 ### Config Directory
 
