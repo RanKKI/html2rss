@@ -80,3 +80,11 @@ docker run -d \
     --restart unless-stopped \
     rankki/html2rss:latest
 ```
+
+### API
+
+```bash
+curl -X GET http://127.0.0.1:8000/rss/<alias_or_url>
+```
+
+You can use the alias or the url of the configuration file.
