@@ -1,8 +1,7 @@
-from fastapi import FastAPI, HTTPException, status, Response
+from fastapi import FastAPI, HTTPException, Response, status
 
 from html2rss.config import config
 from html2rss.rss import rss
-
 
 app = FastAPI()
 

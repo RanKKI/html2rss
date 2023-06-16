@@ -2,11 +2,13 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Union, List
+from typing import List, Union
+
 from html2rss.dataclass import SiteConf
 
 CONFIG_FOLDER = Path(os.environ.get("HTML2RSS_CONFIG_FOLDER", default="./config"))
 logger = logging.getLogger(__name__)
+
 
 class ConfigManager(object):
     def __init__(self) -> None:

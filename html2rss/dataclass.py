@@ -1,5 +1,6 @@
 from dataclasses import dataclass, fields, field
 from typing import Union
+from urllib.parse import urlparse
 
 
 def from_dict_to_dataclass(clz, data):

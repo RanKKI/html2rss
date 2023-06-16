@@ -1,14 +1,15 @@
+import logging
 import time
 from hashlib import md5
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple, Union
-import logging
+
 import aiohttp
 import lxml.etree
 import lxml.html
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from html2rss.dataclass import RSSItem, SiteConf, RSSChannel
+from html2rss.dataclass import RSSChannel, RSSItem, SiteConf
 
 NODE_RESULT = Union[lxml.etree._Element, lxml.etree._ElementUnicodeResult]
 logger = logging.getLogger(__name__)
@@ -147,12 +148,7 @@ class RSS(object):
     async def parse_html(
         self, html: lxml.etree.ElementBase, conf: RSSItem
     ) -> List[RSSItem]:
-        try:
-            item, length = await self.xpath_rss_items(html, conf)
-        except ValueError as e:
-            logger.error(e)
-            raise e
-            return []
+        item, length = await self.xpath_rss_items(html, conf)
 
         def f(val: NODE_RESULT):
             ret = val
