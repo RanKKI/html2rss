@@ -1,1 +1,2 @@
+HOME=/
 */30 * * * * python /app/rssbot/bot.py
