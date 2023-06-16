@@ -6,6 +6,7 @@
 !/html2rss
 !/conf
 !/templates
+!/rssbot
 
 # Ignore unnecessary files inside allowed directories
 # This should go after the allowed directories
