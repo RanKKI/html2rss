@@ -20,6 +20,8 @@ class ConfigManager(object):
             logger.error("Config folder not found")
             return
         for conf_file in CONFIG_FOLDER.glob("**/*.json"):
+            if conf_file.stem.startswith("_"):
+                continue
             conf_json = json.loads(conf_file.read_text())
 
             if "alias" not in conf_json:

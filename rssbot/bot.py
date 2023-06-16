@@ -18,7 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 CONFIG_FOLDER = Path(os.environ.get("HTML2RSS_CONFIG_FOLDER", default="./config"))
-BOT_CONFIG = json.loads((CONFIG_FOLDER / "bot.json").read_text())
+BOT_CONFIG = json.loads((CONFIG_FOLDER / "_bot.json").read_text())
 URLs = BOT_CONFIG["URLs"]
 CALLBACK_URL = BOT_CONFIG["callback"]
 r = redis.Redis(
