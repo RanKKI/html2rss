@@ -1,0 +1,8 @@
+{
+    "URLs": [
+        "http://html2rss:8000/rss/monash"
+    ],
+    "callback": [
+        "https://api.day.app/h8z5rZfoJUKms7ju47ccMf/{title}/{content}"
+    ]
+}
