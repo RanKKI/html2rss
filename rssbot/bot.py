@@ -22,8 +22,8 @@ BOT_CONFIG = json.loads((CONFIG_FOLDER / "_bot.json").read_text())
 URLs = BOT_CONFIG["URLs"]
 CALLBACK_URL = BOT_CONFIG["callback"]
 r = redis.Redis(
-    host=os.environ.get("REDIS_HOST", default="localhost"),
-    port=os.environ.get("REDIS_PORT", default=6379),
+    host=os.environ.get("HTML2RSS_REDIS_HOST", default="localhost"),
+    port=os.environ.get("HTML2RSS_REDIS_PORT", default=6379),
 )
 
 
