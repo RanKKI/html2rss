@@ -10,8 +10,6 @@ RUN pip install -r /app/requirements.txt
 
 COPY . /app/
 
-RUN cp /app/rssbot/cron /etc/cron.d/botcron && chmod 0644 /etc/cron.d/botcron && crontab /etc/cron.d/botcron && service cron restart
-
-ENV UVICORN_HOST="0.0.0.0" UVICORN_PORT="8000"
+ENV UVICORN_HOST="0.0.0.0" UVICORN_PORT="8000" HTML2RSS_CRON_INTERVAL="*/30 * * * *"
 
 ENTRYPOINT [ "sh", "/app/entry.sh" ]

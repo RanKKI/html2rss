@@ -1,2 +1,0 @@
-HOME=/
-*/30 * * * * root /usr/local/bin/python3 /app/rssbot/bot.py
