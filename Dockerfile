@@ -14,4 +14,4 @@ RUN cp /app/rssbot/cron /etc/cron.d/botcron && chmod 0644 /etc/cron.d/botcron &&
 
 ENV UVICORN_HOST="0.0.0.0" UVICORN_PORT="8000"
 
-ENTRYPOINT [ "uvicorn", "html2rss.api:app", "--log-config", "./conf/log.yml" ]
+ENTRYPOINT [ "sh", "/app/entry.sh" ]
